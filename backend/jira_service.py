@@ -263,3 +263,66 @@ async def create_pull_request(
         "head": result.get("head", {}).get("ref"),
         "base": result.get("base", {}).get("ref"),
     }
+    
+async def move_jira_issue_to_code_review(issue_key: str):
+    transitions = await get_jira_transitions(issue_key)
+
+    available_transitions = transitions.get(
+        "transitions",
+        []
+    )
+
+    target_transition = None
+
+    for transition in available_transitions:
+        name = transition.get(
+            "name",
+            ""
+        ).strip().lower()
+
+        if name == "code review":
+            target_transition = transition
+            break
+
+    if not target_transition:
+        available_names = [
+            transition.get("name")
+            for transition in available_transitions
+        ]
+
+        raise ValueError(
+            "Code Review transition is not available. "
+            f"Available transitions: {available_names}"
+        )
+
+    transition_id = target_transition["id"]
+
+    url = (
+        f"{JIRA_BASE_URL}/rest/api/3/issue/"
+        f"{issue_key}/transitions"
+    )
+
+    payload = {
+        "transition": {
+            "id": transition_id
+        }
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            url,
+            headers=JIRA_HEADERS,
+            auth=(
+                JIRA_EMAIL,
+                JIRA_API_TOKEN
+            ),
+            json=payload,
+        )
+
+        response.raise_for_status()
+
+    return {
+        "key": issue_key,
+        "status": "Code Review",
+        "transition_id": transition_id,
+    }

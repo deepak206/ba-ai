@@ -234,3 +234,29 @@ export const getRepositoryTree = async () => {
   
     return response.json();
   };
+
+  export const moveJiraIssueToCodeReview = async (
+    issueKey
+  ) => {
+    const response = await fetch(
+      `${API_BASE_URL}/jira/${encodeURIComponent(
+        issueKey
+      )}/code-review`,
+      {
+        method: "POST",
+      }
+    );
+  
+    if (!response.ok) {
+      const error = await response
+        .json()
+        .catch(() => null);
+  
+      throw new Error(
+        error?.detail ||
+          "Unable to move Jira ticket to Code Review"
+      );
+    }
+  
+    return response.json();
+  };

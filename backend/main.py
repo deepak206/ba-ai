@@ -9,6 +9,7 @@ from jira_service import (
     extract_adf_text,
     get_jira_transitions,
     move_jira_issue_to_in_progress,
+    move_jira_issue_to_code_review,
 )
 from github_service import (
     get_repository,
@@ -725,6 +726,27 @@ async def github_pull_request(
             "issue_key": request.issue_key,
             "pull_request": result,
         }
+
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(
+            status_code=e.response.status_code,
+            detail=e.response.text,
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e),
+        )
+        
+@app.post("/jira/{issue_key}/code-review")
+async def jira_code_review(issue_key: str):
+    try:
+        result = await move_jira_issue_to_code_review(
+            issue_key
+        )
+
+        return result
 
     except httpx.HTTPStatusError as e:
         raise HTTPException(

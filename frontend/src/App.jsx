@@ -11,6 +11,7 @@ import BranchApproval from "./components/GitHub/BranchApproval";
 import CodeAnalysis from "./components/AI/CodeAnalysis";
 import CodeReview from "./components/AI/CodeReview";
 import PullRequestApproval from "./components/GitHub/PullRequestApproval";
+import JiraCodeReviewApproval from "./components/Jira/JiraCodeReviewApproval";
 
 import {
   createJiraIssue,
@@ -20,6 +21,7 @@ import {
   applyCodeChanges,
   createPullRequest,
   getRepositoryTree,
+  moveJiraIssueToCodeReview
 } from "./services/api";
 
 function App() {
@@ -66,6 +68,12 @@ function App() {
 
   const [repository, setRepository] = useState(null);
   const [repositoryLoading, setRepositoryLoading] = useState(false);
+
+  const [codeReviewApproval, setCodeReviewApproval] =
+  useState(false);
+
+  const [jiraCodeReviewResult, setJiraCodeReviewResult] =
+    useState(null);
 
   /*
    * -----------------------------------------
@@ -362,6 +370,30 @@ function App() {
       duration: 0.35,
       ease: "easeOut",
     },
+  };
+
+  const handleMoveToCodeReview = async () => {
+    try {
+      setCodeReviewLoading(true);
+  
+      const result =
+        await moveJiraIssueToCodeReview(
+          jiraTicket.key
+        );
+  
+      setJiraCodeReviewResult(result);
+      setCodeReviewApproval(false);
+  
+    } catch (error) {
+      console.error(
+        "CODE REVIEW STATUS ERROR:",
+        error
+      );
+  
+      alert(error.message);
+    } finally {
+      setCodeReviewLoading(false);
+    }
   };
 
   return (
@@ -756,6 +788,24 @@ function App() {
 
                 </div>
 
+                {pullRequestResult && !jiraCodeReviewResult && (
+                  <JiraCodeReviewApproval
+                    issueKey={jiraTicket.key}
+                    loading={codeReviewLoading}
+                    onApprove={handleMoveToCodeReview}
+                  />
+                )}
+                {jiraCodeReviewResult && (
+                  <div className="rounded-xl border border-green-200 bg-green-50 p-5">
+                    <h3 className="font-semibold text-green-800">
+                      Jira Ticket Moved to Code Review
+                    </h3>
+
+                    <p className="mt-2 text-sm text-green-700">
+                      {jiraTicket.key} is now in Code Review.
+                    </p>
+                  </div>
+                )}
               </motion.div>
             )}
 
