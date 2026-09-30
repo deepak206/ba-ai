@@ -363,7 +363,7 @@ http://localhost:5173
 Example:
 
 ```python
-app.add_middleware(
+add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
     allow_credentials=True,
