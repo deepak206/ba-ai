@@ -9,6 +9,24 @@ JIRA_EMAIL = os.getenv("JIRA_EMAIL")
 JIRA_API_TOKEN = os.getenv("JIRA_API_TOKEN")
 
 
+
+# ============================================================
+# GitHub Configuration
+# ============================================================
+
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+GITHUB_OWNER = os.getenv("GITHUB_OWNER")
+GITHUB_REPO = os.getenv("GITHUB_REPO")
+
+GITHUB_API_URL = "https://api.github.com"
+
+GITHUB_HEADERS = {
+    "Accept": "application/vnd.github+json",
+    "Authorization": f"Bearer {GITHUB_TOKEN}",
+    "X-GitHub-Api-Version": "2022-11-28",
+}
+
+
 JIRA_HEADERS = {
     "Accept": "application/json",
     "Content-Type": "application/json",
